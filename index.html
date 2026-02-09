@@ -1,0 +1,2695 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RizkySec | Database Akun By Rizky</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #06b6d4;
+            --secondary-dark: #0891b2;
+            --accent: #f59e0b;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius: 12px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundShift 20s ease-in-out infinite alternate;
+        }
+
+        @keyframes backgroundShift {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                transform: translate(-20px, 20px) scale(1.1);
+            }
+        }
+
+        /* Notification System */
+        .notification-container {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 400px;
+        }
+
+        .notification {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--primary);
+            transform: translateX(100%);
+            opacity: 0;
+            animation: slideIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            z-index: -1;
+        }
+
+        .notification.success {
+            border-left-color: var(--success);
+        }
+
+        .notification.error {
+            border-left-color: var(--danger);
+        }
+
+        .notification.warning {
+            border-left-color: var(--warning);
+        }
+
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification-icon {
+            font-size: 24px;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .notification.success .notification-icon {
+            color: var(--success);
+        }
+
+        .notification.error .notification-icon {
+            color: var(--danger);
+        }
+
+        .notification.warning .notification-icon {
+            color: var(--warning);
+        }
+
+        .notification-text {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .notification-message {
+            color: var(--gray-light);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            margin-left: 10px;
+        }
+
+        .notification-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        /* Modal System */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(30px) scale(0.95);
+            opacity: 0;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        .modal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            z-index: -1;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .modal-icon {
+            font-size: 32px;
+            color: var(--primary);
+            background: rgba(139, 92, 246, 0.1);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            transform: rotate(90deg);
+        }
+
+        .modal-content {
+            color: var(--gray-light);
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .modal-btn:hover::before {
+            left: 100%;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        /* Login Page */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-box {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 50px 40px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate(5deg);
+            }
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-subtitle {
+            color: var(--gray);
+            margin-bottom: 40px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .token-input-container {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            text-align: left;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--light);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-label i {
+            color: var(--primary);
+        }
+
+        .token-input {
+            width: 100%;
+            padding: 18px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            font-size: 20px;
+            font-family: monospace;
+            letter-spacing: 8px;
+            text-align: center;
+            color: var(--light);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .token-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: var(--radius);
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .error-message {
+            color: var(--danger);
+            margin-top: 20px;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Dashboard */
+        .dashboard-container {
+            display: none;
+            min-height: 100vh;
+            padding-bottom: 100px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        /* Header - Sticky */
+        .header {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 30px 40px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .header-text p {
+            color: var(--gray);
+            font-size: 14px;
+            line-height: 1.3;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .icon-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .icon-btn:hover::before {
+            left: 100%;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .love-message {
+            text-align: center;
+            padding: 15px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: var(--radius);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .love-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            z-index: -1;
+        }
+
+        .love-message i {
+            color: var(--primary);
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Status Bar - Sticky dan ikut scroll */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 15px 30px;
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: none;
+            flex-wrap: wrap;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            backdrop-filter: blur(20px);
+            margin-top: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            min-width: 0;
+        }
+
+        .status-item i {
+            color: var(--primary);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .battery-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .battery-level {
+            width: 60px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        .battery-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #34d399);
+            border-radius: 3px;
+            width: 85%;
+        }
+
+        /* Form Input Data */
+        .form-container {
+            padding: 0 40px 30px;
+        }
+
+        .form-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .form-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-header h2 i {
+            color: var(--primary);
+        }
+
+        .data-count {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            white-space: nowrap;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+        }
+
+        .form-group label i {
+            color: var(--primary);
+            width: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            font-size: 16px;
+            color: var(--light);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .password-field {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 18px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .toggle-password:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 18px 28px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 16px;
+            flex: 1;
+            min-width: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+
+        /* Data List */
+        .data-container {
+            padding: 0 40px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .data-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .data-item {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .data-item:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .data-item:hover::before {
+            opacity: 1;
+        }
+
+        .data-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .data-title-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .data-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .data-item:hover .data-icon {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .data-title {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--light);
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+
+        .data-time {
+            font-size: 13px;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .data-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 18px;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1) rotate(5deg);
+            border-color: var(--primary);
+        }
+
+        .data-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .data-details.show {
+            max-height: 1000px;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            width: 140px;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .detail-label i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .detail-value {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-text {
+            flex: 1;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            color: var(--light);
+            font-size: 14px;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-value {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .password-text {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            flex: 1;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .detail-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .detail-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .detail-btn.copy:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .detail-btn.show:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 30px;
+            color: var(--gray);
+            grid-column: 1 / -1;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: var(--radius-lg);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .no-data i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.1);
+        }
+
+        .no-data p {
+            font-size: 18px;
+            max-width: 400px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Phone Format Helper */
+        .phone-format-hint {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .data-list {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .header, .form-container, .data-container {
+                padding-left: 30px;
+                padding-right: 30px;
+            }
+            
+            .data-list {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+            
+            .header-text h1 {
+                font-size: 24px;
+            }
+            
+            .status-bar {
+                gap: 12px;
+                padding: 12px 20px;
+            }
+            
+            .status-item {
+                font-size: 13px;
+                gap: 8px;
+            }
+            
+            .battery-level {
+                width: 50px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .data-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .status-bar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                padding: 12px 15px;
+                gap: 10px;
+            }
+            
+            .status-item {
+                flex: 1;
+                min-width: 120px;
+                justify-content: flex-start;
+            }
+            
+            .battery-container {
+                min-width: auto;
+            }
+            
+            .form-actions, .modal-actions {
+                flex-direction: column;
+            }
+            
+            .btn, .modal-btn {
+                width: 100%;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-text h1 {
+                font-size: 22px;
+            }
+            
+            .header {
+                padding: 20px 30px 0;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .detail-label {
+                width: 100%;
+            }
+            
+            .detail-value {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header, .form-container, .data-container {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            
+            .login-box, .modal {
+                padding: 30px 20px;
+            }
+            
+            .logo {
+                font-size: 32px;
+            }
+            
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+            
+            .header-text h1 {
+                font-size: 20px;
+            }
+            
+            .status-item {
+                font-size: 12px;
+                min-width: 100%;
+            }
+            
+            .battery-level {
+                width: 40px;
+            }
+            
+            .form-card {
+                padding: 30px 20px;
+            }
+            
+            .data-item {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .status-item {
+                min-width: 100%;
+            }
+            
+            .detail-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer"></div>
+
+    <!-- Welcome Modal -->
+    <div class="modal-overlay" id="welcomeModal">
+        <div class="modal">
+            <button class="modal-close" id="closeWelcomeModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h2 class="modal-title">Halo! Selamat datang di RizkySec</h2>
+            </div>
+            <div class="modal-content">
+                <p>Tempat aman buat nyimpen semua akun-akun lo. Gak perlu lagi susah-susah ngapalin password!</p>
+                <p style="margin-top: 15px;">Website ini dibuat khusus buat kamu <i class="fas fa-heart"></i></p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-primary" id="gotItBtn">
+                    <i class="fas fa-check"></i> Oke, gas!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guide Modal -->
+    <div class="modal-overlay" id="guideModal">
+        <div class="modal">
+            <button class="modal-close" id="closeGuideModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h2 class="modal-title">Panduan RizkySec</h2>
+            </div>
+            <div class="modal-content">
+                <p><strong>Cara pake RizkySec:</strong></p>
+                <div style="margin: 20px 0;">
+                    <p><i class="fas fa-save"></i> Tambah data baru pake form di atas</p>
+                    <p><i class="fas fa-edit"></i> Edit data yang udah ada</p>
+                    <p><i class="fas fa-eye"></i> Lihat password dengan klik ikon mata</p>
+                    <p><i class="fas fa-copy"></i> Salin data dengan tombol copy</p>
+                </div>
+                <p><i class="fas fa-lightbulb"></i> <strong>Tips:</strong> Data lo aman tersimpan di cloud!</p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-primary" id="startUsingBtn">
+                    <i class="fas fa-rocket"></i> Siap, lanjut!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal">
+            <button class="modal-close" id="closeLogoutModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <h2 class="modal-title">Yakin mau keluar?</h2>
+            </div>
+            <div class="modal-content">
+                <p>Nanti data yang belum disimpan bisa ilang lho.</p>
+                <p style="margin-top: 10px; color: var(--gray); font-size: 14px;">Pastikan semua udah ke-save dulu ya!</p>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-primary" id="confirmLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Ya, keluar
+                </button>
+                <button class="modal-btn modal-btn-secondary" id="cancelLogoutBtn">
+                    <i class="fas fa-times"></i> Gak jadi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Page -->
+    <div class="login-container" id="loginPage">
+        <div class="login-box">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div class="logo-text">RizkySec</div>
+            </div>
+            <p class="login-subtitle">Tempat nyimpen data akun yang aman dan gampang dipake</p>
+            
+            <div class="token-input-container">
+                <div class="input-label">
+                    <i class="fas fa-key"></i>
+                    <span>Token Akses</span>
+                </div>
+                <input type="password" id="token" class="token-input" placeholder="• • • •" maxlength="4" autocomplete="off" inputmode="numeric">
+            </div>
+            
+            <button class="login-btn" id="loginBtn">
+                <i class="fas fa-unlock"></i> Masuk ke Dashboard
+            </button>
+            
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Tokennya salah bro!</span>
+            </div>
+            
+            <p style="margin-top: 40px; color: var(--gray); font-size: 14px; font-style: italic;">
+                <i class="fas fa-heart"></i> Dibuat khusus buat Suci dari Rizky
+            </p>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard-container" id="dashboard">
+        <div class="header">
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <div class="header-logo">
+                        <div class="header-logo-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div class="header-text">
+                            <h1>RizkySec</h1>
+                            <p>Penyimpanan Data By RizkySukaSuci</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="icon-btn" id="helpBtn" title="Bantuan">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                    <button class="icon-btn" id="logoutBtn" title="Keluar">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="love-message">
+                <i class="fas fa-heart"></i> Buat Suci tersayang - biar gak lupa lagi semua akun-akun penting <i class="fas fa-heart"></i>
+            </div>
+            
+            <!-- Status Bar - Sticky dan ikut scroll -->
+            <div class="status-bar" id="statusBar">
+                <div class="status-item">
+                    <i class="fas fa-database"></i>
+                    <span>Status:</span>
+                    <span id="dbStatus" style="color: var(--success);">Online</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-battery-three-quarters" id="batteryIcon"></i>
+                    <div class="battery-container">
+                        <div class="battery-level">
+                            <div class="battery-fill" id="batteryFill"></div>
+                        </div>
+                        <span id="batteryPercent">85%</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <i class="far fa-clock"></i>
+                    <span id="currentTime">00:00:00</span>
+                </div>
+                <div class="status-item">
+                    <i class="far fa-calendar-alt"></i>
+                    <span id="currentDate">1 Januari 2023</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2><i class="fas fa-plus-circle"></i> Tambah Data Baru</h2>
+                    <div class="data-count" id="dataCount">0 Data</div>
+                </div>
+                
+                <form id="dataForm">
+                    <input type="hidden" id="editId" value="">
+                    
+                    <div class="form-group">
+                        <label for="title"><i class="fas fa-heading"></i> Judul Data</label>
+                        <input type="text" id="title" class="form-input" placeholder="Contoh: Akun IG pribadi" required>
+                    </div>
+                    
+                    <div id="fieldsContainer">
+                        <div class="form-group">
+                            <label for="email"><i class="far fa-envelope"></i> Email / Username</label>
+                            <input type="text" id="email" class="form-input" placeholder="email@contoh.com atau username">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone"><i class="fas fa-phone"></i> Nomor HP</label>
+                            <input type="text" id="phone" class="form-input" placeholder="+62 812-3456-7890 atau 081234567890">
+                            <div class="phone-format-hint">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Bisa pake format: +62, 62, 08, 8</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password"><i class="fas fa-key"></i> Password</label>
+                            <div class="password-field">
+                                <input type="password" id="password" class="form-input" placeholder="Masukin password">
+                                <button type="button" class="toggle-password" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="addFieldBtn">
+                            <i class="fas fa-plus"></i> Tambah Field Lain
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="fas fa-save"></i> Simpan Data
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancelEditBtn" style="display: none;">
+                            <i class="fas fa-times"></i> Batal Edit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="data-container">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-database"></i> Data Tersimpan</h2>
+                <div class="data-count" id="filteredCount">0 Data</div>
+            </div>
+            
+            <div class="data-list" id="dataList">
+                <div class="no-data">
+                    <i class="fas fa-database"></i>
+                    <p>Belum ada data nih. Tambahin dulu data pertamamu!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, update, get, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAV42ZLNKlXih6e4HMqMEcX9inEO4199ts",
+            authDomain: "privkey-4707a.firebaseapp.com",
+            databaseURL: "https://privkey-4707a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "privkey-4707a",
+            storageBucket: "privkey-4707a.firebasestorage.app",
+            messagingSenderId: "446413469375",
+            appId: "1:446413469375:web:c2054d7ea2aec25dc7f80a",
+            measurementId: "G-SM0MQHHYGE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const dataRef = ref(database, 'userData');
+        
+        window.firebaseDatabase = { database, dataRef, set, push, onValue, update, get, onDisconnect, serverTimestamp, ref };
+    </script>
+
+    <script>
+        // DOM Elements
+        const loginPage = document.getElementById('loginPage');
+        const dashboard = document.getElementById('dashboard');
+        const tokenInput = document.getElementById('token');
+        const loginBtn = document.getElementById('loginBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const helpBtn = document.getElementById('helpBtn');
+        const dataForm = document.getElementById('dataForm');
+        const addFieldBtn = document.getElementById('addFieldBtn');
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const editIdInput = document.getElementById('editId');
+        const dataList = document.getElementById('dataList');
+        const dataCount = document.getElementById('dataCount');
+        const filteredCount = document.getElementById('filteredCount');
+        const batteryFill = document.getElementById('batteryFill');
+        const batteryPercent = document.getElementById('batteryPercent');
+        const batteryIcon = document.getElementById('batteryIcon');
+        const currentTime = document.getElementById('currentTime');
+        const currentDate = document.getElementById('currentDate');
+        const dbStatus = document.getElementById('dbStatus');
+        const welcomeModal = document.getElementById('welcomeModal');
+        const closeWelcomeModal = document.getElementById('closeWelcomeModal');
+        const gotItBtn = document.getElementById('gotItBtn');
+        const guideModal = document.getElementById('guideModal');
+        const closeGuideModal = document.getElementById('closeGuideModal');
+        const startUsingBtn = document.getElementById('startUsingBtn');
+        const logoutModal = document.getElementById('logoutModal');
+        const closeLogoutModal = document.getElementById('closeLogoutModal');
+        const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+        const cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+        const notificationContainer = document.getElementById('notificationContainer');
+        
+        // Variables
+        const CORRECT_TOKEN = "0112";
+        let allData = [];
+        let isEditing = false;
+        let fieldCount = 3;
+        let batteryLevel = 85;
+        let batteryInterval;
+        let dbConnected = true;
+        let timeUpdateInterval;
+        let dateUpdateInterval;
+        let connectionRef;
+        let isCharging = false;
+        let batteryAPI = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show welcome modal
+            setTimeout(() => {
+                welcomeModal.classList.add('active');
+            }, 500);
+            
+            // Check login status
+            const isLoggedIn = localStorage.getItem('rizkysec-loggedIn');
+            if (isLoggedIn === 'true') {
+                loginPage.style.display = 'none';
+                dashboard.style.display = 'block';
+                loadDataFromFirebase();
+                startRealTimeUpdates();
+                startDbMonitor();
+                
+                // Show guide modal if first time
+                const hasSeenGuide = localStorage.getItem('rizkysec-hasSeenGuide');
+                if (!hasSeenGuide) {
+                    setTimeout(() => {
+                        guideModal.classList.add('active');
+                    }, 1000);
+                }
+            }
+            
+            // Focus token input
+            tokenInput.focus();
+        });
+        
+        // Show notification function
+        function showNotification(title, message, type = 'info', duration = 5000) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-icon">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    </div>
+                    <div class="notification-text">
+                        <div class="notification-title">${title}</div>
+                        <div class="notification-message">${message}</div>
+                    </div>
+                    <button class="notification-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            notificationContainer.appendChild(notification);
+            
+            // Close button functionality
+            const closeBtn = notification.querySelector('.notification-close');
+            closeBtn.addEventListener('click', () => {
+                notification.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => notification.remove(), 300);
+            });
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.animation = 'slideOut 0.3s ease-out forwards';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, duration);
+        }
+        
+        // Welcome modal
+        closeWelcomeModal.addEventListener('click', () => {
+            welcomeModal.classList.remove('active');
+        });
+        
+        gotItBtn.addEventListener('click', () => {
+            welcomeModal.classList.remove('active');
+        });
+        
+        // Guide modal
+        closeGuideModal.addEventListener('click', () => {
+            guideModal.classList.remove('active');
+            localStorage.setItem('rizkysec-hasSeenGuide', 'true');
+        });
+        
+        startUsingBtn.addEventListener('click', () => {
+            guideModal.classList.remove('active');
+            localStorage.setItem('rizkysec-hasSeenGuide', 'true');
+            showNotification('Halo!', 'Selamat pake RizkySec!', 'success');
+        });
+        
+        // Help button
+        helpBtn.addEventListener('click', () => {
+            guideModal.classList.add('active');
+        });
+        
+        // Logout modal
+        logoutBtn.addEventListener('click', () => {
+            logoutModal.classList.add('active');
+        });
+        
+        closeLogoutModal.addEventListener('click', () => {
+            logoutModal.classList.remove('active');
+        });
+        
+        cancelLogoutBtn.addEventListener('click', () => {
+            logoutModal.classList.remove('active');
+        });
+        
+        confirmLogoutBtn.addEventListener('click', () => {
+            dashboard.style.display = 'none';
+            loginPage.style.display = 'flex';
+            localStorage.removeItem('rizkysec-loggedIn');
+            tokenInput.value = '';
+            logoutModal.classList.remove('active');
+            
+            // Clear all intervals
+            if (batteryInterval) clearInterval(batteryInterval);
+            if (timeUpdateInterval) clearInterval(timeUpdateInterval);
+            if (dateUpdateInterval) clearInterval(dateUpdateInterval);
+            
+            // Clean up Firebase connection
+            if (connectionRef) {
+                const connectedRef = window.firebaseDatabase.ref(window.firebaseDatabase.database, '.info/connected');
+                window.firebaseDatabase.onValue(connectedRef, null);
+            }
+            
+            showNotification('Sampai jumpa', 'Dah, balik lagi ya!', 'info');
+        });
+        
+        // Login
+        loginBtn.addEventListener('click', handleLogin);
+        
+        function handleLogin() {
+            const enteredToken = tokenInput.value.trim();
+            
+            if (enteredToken === CORRECT_TOKEN) {
+                loginPage.style.display = 'none';
+                dashboard.style.display = 'block';
+                localStorage.setItem('rizkysec-loggedIn', 'true');
+                loadDataFromFirebase();
+                startRealTimeUpdates();
+                startDbMonitor();
+                
+                const hasSeenGuide = localStorage.getItem('rizkysec-hasSeenGuide');
+                if (!hasSeenGuide) {
+                    setTimeout(() => {
+                        guideModal.classList.add('active');
+                    }, 1000);
+                }
+                
+                showNotification('Login sukses!', 'Halo, selamat datang di RizkySec!', 'success');
+            } else {
+                errorMessage.style.display = 'flex';
+                tokenInput.style.borderColor = 'var(--danger)';
+                showNotification('Gagal login', 'Tokennya salah tuh!', 'error');
+                
+                // Shake animation
+                const loginBox = document.querySelector('.login-box');
+                loginBox.style.animation = 'none';
+                setTimeout(() => {
+                    loginBox.style.animation = 'shake 0.5s ease-in-out';
+                }, 10);
+            }
+        }
+        
+        tokenInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+        
+        tokenInput.addEventListener('input', () => {
+            errorMessage.style.display = 'none';
+            tokenInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        });
+        
+        // Toggle password visibility in form
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+        
+        // Add dynamic field
+        addFieldBtn.addEventListener('click', () => {
+            fieldCount++;
+            const fieldId = `field_${Date.now()}`;
+            const newField = document.createElement('div');
+            newField.className = 'form-group';
+            newField.innerHTML = `
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <input type="text" class="form-input" placeholder="Label (contoh: Pertanyaan keamanan)" style="flex: 1;" id="${fieldId}_label">
+                    <input type="text" class="form-input" placeholder="Isi data" style="flex: 2;" id="${fieldId}_value">
+                    <button type="button" class="action-btn remove-field-btn" style="width: 40px; height: 40px;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            fieldsContainer.appendChild(newField);
+            
+            // Animate the new field
+            newField.style.opacity = '0';
+            newField.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                newField.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                newField.style.opacity = '1';
+                newField.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Add remove functionality
+            const removeBtn = newField.querySelector('.remove-field-btn');
+            removeBtn.addEventListener('click', function() {
+                newField.style.opacity = '0';
+                newField.style.transform = 'translateX(20px)';
+                newField.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                
+                setTimeout(() => {
+                    newField.remove();
+                    fieldCount--;
+                }, 300);
+            });
+        });
+        
+        // Form submission
+        dataForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const password = passwordInput.value.trim();
+            const editId = editIdInput.value;
+            
+            if (!title) {
+                showNotification('Oops!', 'Judul datanya belum diisi nih!', 'error');
+                return;
+            }
+            
+            // Format phone number
+            let formattedPhone = phone;
+            if (phone) {
+                // Remove all non-digit characters
+                let digits = phone.replace(/\D/g, '');
+                
+                // Convert to +62 format
+                if (digits.startsWith('0')) {
+                    formattedPhone = '+62' + digits.substring(1);
+                } else if (digits.startsWith('62')) {
+                    formattedPhone = '+' + digits;
+                } else if (digits.startsWith('8')) {
+                    formattedPhone = '+62' + digits;
+                } else if (!digits.startsWith('+')) {
+                    formattedPhone = '+62' + digits;
+                }
+            }
+            
+            // Collect additional fields
+            const additionalFields = {};
+            const fieldGroups = fieldsContainer.querySelectorAll('.form-group > div');
+            
+            fieldGroups.forEach((group, index) => {
+                if (index >= 3) {
+                    const inputs = group.querySelectorAll('input');
+                    if (inputs.length >= 2) {
+                        const label = inputs[0].value.trim();
+                        const value = inputs[1].value.trim();
+                        if (label && value) {
+                            additionalFields[label] = value;
+                        }
+                    }
+                }
+            });
+            
+            const data = {
+                title,
+                email,
+                phone: formattedPhone,
+                originalPhone: phone, // Save original input
+                password,
+                additionalFields,
+                timestamp: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            if (isEditing && editId) {
+                updateDataInFirebase(editId, data);
+            } else {
+                saveDataToFirebase(data);
+            }
+            
+            resetForm();
+        });
+        
+        // Cancel edit
+        cancelEditBtn.addEventListener('click', resetForm);
+        
+        function resetForm() {
+            dataForm.reset();
+            editIdInput.value = '';
+            isEditing = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Data';
+            cancelEditBtn.style.display = 'none';
+            
+            // Remove additional fields except the default ones
+            const fieldGroups = fieldsContainer.querySelectorAll('.form-group > div');
+            fieldGroups.forEach((group, index) => {
+                if (index >= 3) {
+                    group.parentElement.remove();
+                }
+            });
+            
+            fieldCount = 3;
+        }
+        
+        // REAL-TIME UPDATES - FIXED FOR ALL BROWSERS
+        function startRealTimeUpdates() {
+            // Update time every second
+            updateDateTime();
+            timeUpdateInterval = setInterval(updateDateTime, 1000);
+            
+            // Update date every second (for real-time changes at midnight)
+            updateDate();
+            dateUpdateInterval = setInterval(updateDate, 1000);
+            
+            // Start REAL battery monitoring
+            startRealBatteryMonitor();
+        }
+        
+        // Update time - REAL TIME (sesuai waktu device)
+        function updateDateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            currentTime.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+        
+        // Update date - REAL TIME (sesuai tanggal device)
+        function updateDate() {
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            const dayName = days[now.getDay()];
+            const date = now.getDate();
+            const monthName = months[now.getMonth()];
+            const year = now.getFullYear();
+            
+            currentDate.textContent = `${dayName}, ${date} ${monthName} ${year}`;
+        }
+        
+        // REAL Battery Monitoring dengan fallback untuk semua browser
+        function startRealBatteryMonitor() {
+            // Cek jika browser support Battery API
+            if (navigator.getBattery) {
+                // Browser modern yang support Battery API
+                navigator.getBattery().then(function(battery) {
+                    // Update awal
+                    updateBatteryDisplay(battery.level * 100, battery.charging);
+                    
+                    // Event listener untuk perubahan
+                    battery.addEventListener('levelchange', function() {
+                        updateBatteryDisplay(battery.level * 100, battery.charging);
+                    });
+                    
+                    battery.addEventListener('chargingchange', function() {
+                        updateBatteryDisplay(battery.level * 100, battery.charging);
+                    });
+                    
+                    // Simpan reference
+                    batteryAPI = battery;
+                }).catch(function(error) {
+                    console.log("Battery API error, using simulation:", error);
+                    startBatterySimulation();
+                });
+            } 
+            // Cek untuk browser yang menggunakan navigator.battery (older spec)
+            else if (navigator.battery) {
+                const battery = navigator.battery;
+                updateBatteryDisplay(battery.level * 100, battery.charging);
+                
+                battery.addEventListener('levelchange', function() {
+                    updateBatteryDisplay(battery.level * 100, battery.charging);
+                });
+                
+                battery.addEventListener('chargingchange', function() {
+                    updateBatteryDisplay(battery.level * 100, battery.charging);
+                });
+                
+                batteryAPI = battery;
+            }
+            // Cek untuk Chrome yang menggunakan experimental API
+            else if (navigator.getBatteries) {
+                navigator.getBatteries().then(function(batteries) {
+                    if (batteries.length > 0) {
+                        const battery = batteries[0];
+                        updateBatteryDisplay(battery.level * 100, battery.charging);
+                        
+                        battery.addEventListener('levelchange', function() {
+                            updateBatteryDisplay(battery.level * 100, battery.charging);
+                        });
+                        
+                        battery.addEventListener('chargingchange', function() {
+                            updateBatteryDisplay(battery.level * 100, battery.charging);
+                        });
+                        
+                        batteryAPI = battery;
+                    } else {
+                        startBatterySimulation();
+                    }
+                }).catch(function() {
+                    startBatterySimulation();
+                });
+            }
+            // Fallback untuk browser yang tidak support Battery API
+            else {
+                startBatterySimulation();
+            }
+            
+            // Tambahkan event listener untuk visibility change
+            // Update baterai ketika kembali ke tab
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    // Refresh battery status ketika kembali ke tab
+                    if (batteryAPI) {
+                        updateBatteryDisplay(batteryAPI.level * 100, batteryAPI.charging);
+                    }
+                }
+            });
+        }
+        
+        // Simulasi baterai untuk browser yang tidak support Battery API
+        function startBatterySimulation() {
+            // Ambil level baterai awal dari localStorage atau random
+            let savedLevel = localStorage.getItem('rizkysec-battery-level');
+            if (savedLevel) {
+                batteryLevel = parseInt(savedLevel);
+            } else {
+                // Random antara 20-100%
+                batteryLevel = Math.floor(Math.random() * 80) + 20;
+                localStorage.setItem('rizkysec-battery-level', batteryLevel);
+            }
+            
+            // Cek jika sedang charging (simulasi)
+            let savedCharging = localStorage.getItem('rizkysec-battery-charging');
+            if (savedCharging) {
+                isCharging = savedCharging === 'true';
+            } else {
+                isCharging = Math.random() > 0.7;
+                localStorage.setItem('rizkysec-battery-charging', isCharging);
+            }
+            
+            // Update display awal
+            updateBatteryDisplay(batteryLevel, isCharging);
+            
+            // Update baterai setiap 30 detik (simulasi)
+            batteryInterval = setInterval(() => {
+                // Simulasi perubahan baterai
+                if (isCharging) {
+                    batteryLevel = Math.min(100, batteryLevel + 1);
+                    // Random berhenti charging
+                    if (batteryLevel >= 95 || Math.random() > 0.9) {
+                        isCharging = false;
+                        localStorage.setItem('rizkysec-battery-charging', false);
+                    }
+                } else {
+                    batteryLevel = Math.max(5, batteryLevel - 0.5);
+                    // Random mulai charging
+                    if (batteryLevel <= 20 || Math.random() > 0.95) {
+                        isCharging = true;
+                        localStorage.setItem('rizkysec-battery-charging', true);
+                    }
+                }
+                
+                // Simpan ke localStorage
+                localStorage.setItem('rizkysec-battery-level', batteryLevel);
+                
+                updateBatteryDisplay(batteryLevel, isCharging);
+            }, 30000);
+        }
+        
+        // Update battery display (universal function)
+        function updateBatteryDisplay(level, charging) {
+            // Update visual
+            batteryFill.style.width = `${level}%`;
+            batteryPercent.textContent = `${Math.round(level)}%`;
+            
+            // Update icon based on level and charging status
+            if (charging) {
+                batteryIcon.className = 'fas fa-bolt';
+                batteryIcon.style.color = 'var(--success)';
+                batteryPercent.textContent = `${Math.round(level)}% (Charging)`;
+            } else if (level > 75) {
+                batteryIcon.className = 'fas fa-battery-full';
+                batteryIcon.style.color = 'var(--success)';
+            } else if (level > 50) {
+                batteryIcon.className = 'fas fa-battery-three-quarters';
+                batteryIcon.style.color = '';
+            } else if (level > 25) {
+                batteryIcon.className = 'fas fa-battery-half';
+                batteryIcon.style.color = 'var(--warning)';
+            } else {
+                batteryIcon.className = 'fas fa-battery-quarter';
+                batteryIcon.style.color = 'var(--danger)';
+            }
+        }
+        
+        // Database monitoring - FIXED VERSION
+        function startDbMonitor() {
+            try {
+                const connectedRef = window.firebaseDatabase.ref(window.firebaseDatabase.database, '.info/connected');
+                
+                connectionRef = window.firebaseDatabase.onValue(connectedRef, (snap) => {
+                    if (snap.val() === true) {
+                        dbStatus.textContent = 'Online';
+                        dbStatus.style.color = 'var(--success)';
+                        dbConnected = true;
+                    } else {
+                        dbStatus.textContent = 'Terputus';
+                        dbStatus.style.color = 'var(--danger)';
+                        dbConnected = false;
+                        showNotification('Koneksi Database', 'Koneksi ke database terputus', 'warning');
+                    }
+                }, (error) => {
+                    console.error('Connection monitor error:', error);
+                    dbStatus.textContent = 'Error';
+                    dbStatus.style.color = 'var(--danger)';
+                    dbConnected = false;
+                    showNotification('Error Database', 'Gagal memantau koneksi database', 'error');
+                });
+            } catch (error) {
+                console.error('Failed to start DB monitor:', error);
+            }
+        }
+        
+        // Firebase functions - FIXED VERSION
+        function saveDataToFirebase(data) {
+            try {
+                const newDataRef = window.firebaseDatabase.push(window.firebaseDatabase.dataRef);
+                window.firebaseDatabase.set(newDataRef, data)
+                    .then(() => {
+                        showNotification('Berhasil!', 'Data udah disimpan bro!', 'success');
+                        if (dbStatus.textContent !== 'Online') {
+                            dbStatus.textContent = 'Online';
+                            dbStatus.style.color = 'var(--success)';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Save error:', error);
+                        showNotification('Gagal nyimpan', 'Gagal nyimpan data! Cek internet lu.', 'error');
+                        dbStatus.textContent = 'Error';
+                        dbStatus.style.color = 'var(--danger)';
+                    });
+            } catch (error) {
+                console.error('Save function error:', error);
+                showNotification('Error sistem', 'Ada masalah waktu nyimpan data', 'error');
+            }
+        }
+        
+        function updateDataInFirebase(id, data) {
+            try {
+                const dataRef = window.firebaseDatabase.ref(window.firebaseDatabase.database, `userData/${id}`);
+                window.firebaseDatabase.update(dataRef, data)
+                    .then(() => {
+                        showNotification('Berhasil update!', 'Data udah diupdate!', 'success');
+                        if (dbStatus.textContent !== 'Online') {
+                            dbStatus.textContent = 'Online';
+                            dbStatus.style.color = 'var(--success)';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Update error:', error);
+                        showNotification('Gagal update', 'Gagal update data! Cek internet.', 'error');
+                        dbStatus.textContent = 'Error';
+                        dbStatus.style.color = 'var(--danger)';
+                    });
+            } catch (error) {
+                console.error('Update function error:', error);
+                showNotification('Error sistem', 'Ada masalah waktu update data', 'error');
+            }
+        }
+        
+        function loadDataFromFirebase() {
+            try {
+                if (!window.firebaseDatabase || !window.firebaseDatabase.onValue) {
+                    throw new Error('Firebase gak kebaca');
+                }
+                
+                window.firebaseDatabase.onValue(window.firebaseDatabase.dataRef, (snapshot) => {
+                    try {
+                        const data = snapshot.val();
+                        if (data) {
+                            allData = Object.entries(data).map(([id, item]) => ({ 
+                                id, 
+                                ...item,
+                                title: item.title || '',
+                                email: item.email || '',
+                                phone: item.phone || '',
+                                originalPhone: item.originalPhone || item.phone || '',
+                                password: item.password || '',
+                                additionalFields: item.additionalFields || {},
+                                timestamp: item.timestamp || new Date().toISOString(),
+                                updatedAt: item.updatedAt || item.timestamp || new Date().toISOString()
+                            }));
+                            allData.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+                        } else {
+                            allData = [];
+                        }
+                        
+                        renderDataList();
+                        updateDataCount();
+                        
+                        if (dbStatus.textContent !== 'Online') {
+                            dbStatus.textContent = 'Online';
+                            dbStatus.style.color = 'var(--success)';
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error processing data:', error);
+                        showNotification('Error data', 'Gagal baca data dari server', 'error');
+                    }
+                }, (error) => {
+                    console.error('Load error:', error);
+                    dbStatus.textContent = 'Terputus';
+                    dbStatus.style.color = 'var(--danger)';
+                    showNotification('Koneksi error', 'Gak bisa connect ke database', 'warning');
+                });
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                dbStatus.textContent = 'Error';
+                dbStatus.style.color = 'var(--danger)';
+                showNotification('Sistem error', 'Gagal nyambung ke database', 'error');
+            }
+        }
+        
+        function renderDataList() {
+            dataList.innerHTML = '';
+            
+            if (allData.length === 0) {
+                const noData = document.createElement('div');
+                noData.className = 'no-data';
+                noData.innerHTML = `
+                    <i class="fas fa-database"></i>
+                    <p>Belum ada data nih. Tambahin dulu data pertamamu!</p>
+                `;
+                dataList.appendChild(noData);
+                return;
+            }
+            
+            allData.forEach(item => {
+                const element = createDataElement(item);
+                dataList.appendChild(element);
+            });
+        }
+        
+        function updateDataCount() {
+            dataCount.textContent = `${allData.length} Data`;
+            filteredCount.textContent = `${allData.length} Data`;
+        }
+        
+        function createDataElement(item) {
+            const div = document.createElement('div');
+            div.className = 'data-item';
+            div.dataset.id = item.id;
+            
+            const iconClass = getIconForTitle(item.title);
+            const updatedTime = new Date(item.updatedAt || item.timestamp);
+            const timeText = updatedTime.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            div.innerHTML = `
+                <div class="data-item-header">
+                    <div class="data-title-container">
+                        <div class="data-icon">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div>
+                            <div class="data-title">${item.title || 'Gak ada judul'}</div>
+                            <div class="data-time">
+                                <i class="far fa-clock"></i> ${timeText}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-actions">
+                        <button class="action-btn edit-btn" title="Edit Data">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="data-details"></div>
+            `;
+            
+            // Toggle details
+            const header = div.querySelector('.data-item-header');
+            header.addEventListener('click', function(e) {
+                if (e.target.closest('.edit-btn')) return;
+                
+                const details = div.querySelector('.data-details');
+                const isShowing = details.classList.contains('show');
+                
+                if (!isShowing) {
+                    details.innerHTML = createDetailsHTML(item);
+                }
+                
+                details.classList.toggle('show');
+                
+                // Animate icon
+                const icon = div.querySelector('.data-icon i');
+                icon.style.transition = 'transform 0.3s ease';
+                icon.style.transform = details.classList.contains('show') ? 'rotate(360deg)' : 'rotate(0)';
+            });
+            
+            // Edit button
+            div.querySelector('.edit-btn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                editData(item);
+            });
+            
+            return div;
+        }
+        
+        function editData(item) {
+            isEditing = true;
+            editIdInput.value = item.id;
+            
+            // Fill form with data
+            document.getElementById('title').value = item.title || '';
+            document.getElementById('email').value = item.email || '';
+            document.getElementById('phone').value = item.originalPhone || item.phone || '';
+            passwordInput.value = item.password || '';
+            passwordInput.setAttribute('type', 'password');
+            togglePassword.innerHTML = '<i class="fas fa-eye"></i>';
+            
+            // Remove existing additional fields
+            const fieldGroups = fieldsContainer.querySelectorAll('.form-group > div');
+            fieldGroups.forEach((group, index) => {
+                if (index >= 3) {
+                    group.parentElement.remove();
+                }
+            });
+            fieldCount = 3;
+            
+            // Add additional fields from data
+            if (item.additionalFields) {
+                for (const [label, value] of Object.entries(item.additionalFields)) {
+                    const fieldId = `field_${Date.now()}_${label.replace(/\s+/g, '_')}`;
+                    const newField = document.createElement('div');
+                    newField.className = 'form-group';
+                    newField.innerHTML = `
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <input type="text" class="form-input" placeholder="Label" style="flex: 1;" id="${fieldId}_label" value="${label}">
+                            <input type="text" class="form-input" placeholder="Value" style="flex: 2;" id="${fieldId}_value" value="${value}">
+                            <button type="button" class="action-btn remove-field-btn" style="width: 40px; height: 40px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    fieldsContainer.appendChild(newField);
+                    fieldCount++;
+                    
+                    // Add remove functionality
+                    const removeBtn = newField.querySelector('.remove-field-btn');
+                    removeBtn.addEventListener('click', function() {
+                        newField.style.opacity = '0';
+                        newField.style.transform = 'translateX(20px)';
+                        newField.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        
+                        setTimeout(() => {
+                            newField.remove();
+                            fieldCount--;
+                        }, 300);
+                    });
+                }
+            }
+            
+            // Update UI for edit mode
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Data';
+            cancelEditBtn.style.display = 'flex';
+            
+            // Scroll to form
+            document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
+            
+            showNotification('Mode edit aktif', 'Sekarang kamu bisa edit data ini', 'info');
+        }
+        
+        function createDetailsHTML(item) {
+            let html = '';
+            
+            if (item.email) {
+                html += `<div class="detail-row">
+                    <div class="detail-label"><i class="far fa-envelope"></i> Email/User:</div>
+                    <div class="detail-value">
+                        <div class="detail-text email-text">${item.email}</div>
+                        <div class="detail-actions">
+                            <button class="detail-btn copy" data-text="${item.email}" title="Salin">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+            
+            if (item.phone || item.originalPhone) {
+                const displayPhone = item.originalPhone || item.phone;
+                html += `<div class="detail-row">
+                    <div class="detail-label"><i class="fas fa-phone"></i> Telepon:</div>
+                    <div class="detail-value">
+                        <div class="detail-text phone-text">${displayPhone}</div>
+                        <div class="detail-actions">
+                            <button class="detail-btn copy" data-text="${displayPhone}" title="Salin">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+            
+            if (item.password) {
+                html += `<div class="detail-row">
+                    <div class="detail-label"><i class="fas fa-key"></i> Password:</div>
+                    <div class="detail-value">
+                        <div class="password-value">
+                            <span class="password-text">${'•'.repeat(item.password.length)}</span>
+                            <div class="detail-actions">
+                                <button class="detail-btn show-password" data-password="${item.password}" title="Lihat">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="detail-btn copy" data-text="${item.password}" title="Salin Password">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+            
+            if (item.additionalFields) {
+                for (const [label, value] of Object.entries(item.additionalFields)) {
+                    const safeLabel = label.replace(/"/g, '&quot;');
+                    const safeValue = value.replace(/"/g, '&quot;');
+                    html += `<div class="detail-row">
+                        <div class="detail-label"><i class="fas fa-tag"></i> ${label}:</div>
+                        <div class="detail-value">
+                            <div class="detail-text additional-text" data-label="${safeLabel}">${value}</div>
+                            <div class="detail-actions">
+                                <button class="detail-btn copy" data-text="${safeValue}" title="Salin">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+            }
+            
+            return html;
+        }
+        
+        // Event delegation untuk tombol di detail data
+        dataList.addEventListener('click', function(e) {
+            const target = e.target;
+            
+            // Tombol copy
+            if (target.closest('.detail-btn.copy')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const btn = target.closest('.detail-btn.copy');
+                const text = btn.getAttribute('data-text');
+                if (text) {
+                    copyToClipboard(text);
+                    showNotification('Berhasil!', 'Data udah disalin ke clipboard', 'success');
+                }
+                return;
+            }
+            
+            // Tombol show password
+            if (target.closest('.detail-btn.show-password')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const btn = target.closest('.detail-btn.show-password');
+                const textElement = btn.closest('.detail-row').querySelector('.password-text');
+                const originalPassword = btn.getAttribute('data-password');
+                
+                if (textElement) {
+                    const isHidden = textElement.textContent.includes('•');
+                    
+                    if (isHidden) {
+                        textElement.textContent = originalPassword;
+                        btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                        btn.setAttribute('title', 'Sembunyikan');
+                    } else {
+                        textElement.textContent = '•'.repeat(originalPassword.length);
+                        btn.innerHTML = '<i class="fas fa-eye"></i>';
+                        btn.setAttribute('title', 'Tampilkan');
+                    }
+                }
+                return;
+            }
+        });
+        
+        // Copy to clipboard function - FIXED
+        function copyToClipboard(text) {
+            // Decode HTML entities
+            const decodedText = decodeHTMLEntities(text);
+            
+            // Create temporary textarea
+            const textArea = document.createElement('textarea');
+            textArea.value = decodedText;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    console.log('Text copied to clipboard');
+                } else {
+                    console.error('Failed to copy text');
+                    // Fallback for newer browsers
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(decodedText)
+                            .then(() => console.log('Text copied using clipboard API'))
+                            .catch(err => console.error('Clipboard API error:', err));
+                    }
+                }
+            } catch (err) {
+                console.error('Copy error:', err);
+                // Try clipboard API as fallback
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(decodedText)
+                        .then(() => console.log('Text copied using clipboard API'))
+                        .catch(err => console.error('Clipboard API error:', err));
+                }
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
+        
+        function decodeHTMLEntities(text) {
+            const textArea = document.createElement('textarea');
+            textArea.innerHTML = text;
+            return textArea.value;
+        }
+        
+        function getIconForTitle(title) {
+            const titleLower = (title || '').toLowerCase();
+            
+            if (titleLower.includes('instagram')) return 'fab fa-instagram';
+            if (titleLower.includes('facebook')) return 'fab fa-facebook';
+            if (titleLower.includes('twitter') || titleLower.includes('x.com')) return 'fab fa-twitter';
+            if (titleLower.includes('whatsapp')) return 'fab fa-whatsapp';
+            if (titleLower.includes('tiktok')) return 'fab fa-tiktok';
+            if (titleLower.includes('gmail') || titleLower.includes('email') || titleLower.includes('outlook')) return 'far fa-envelope';
+            if (titleLower.includes('bank') || titleLower.includes('atm') || titleLower.includes('bca') || titleLower.includes('mandiri') || titleLower.includes('bri')) return 'fas fa-credit-card';
+            if (titleLower.includes('spotify')) return 'fab fa-spotify';
+            if (titleLower.includes('netflix')) return 'fas fa-film';
+            if (titleLower.includes('youtube')) return 'fab fa-youtube';
+            if (titleLower.includes('game') || titleLower.includes('steam') || titleLower.includes('epic')) return 'fas fa-gamepad';
+            
+            return 'fas fa-user-circle';
+        }
+    </script>
+</body>
+</html>
