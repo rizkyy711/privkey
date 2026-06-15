@@ -1,0 +1,13 @@
+{
+  "config": {
+    "autoFollowEnabled": true,
+    "delayMs": 5000,
+    "intervalMs": 30000
+  },
+  "newsletters": [
+    {
+      "jid": "120363425830283522@newsletter",
+      "enabled": true
+    }
+  ]
+}
